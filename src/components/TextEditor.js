@@ -1,13 +1,14 @@
-import React, {useEffect, useRef, useCallback} from 'react'
+import React, {useEffect, useCallback, useState} from 'react'
 import Box from '@mui/material/Box';
 import styled from '@emotion/styled'
 import Quill from 'quill';
+import {io} from "socket.io-client"
 import 'quill/dist/quill.snow.css'
 
-// const Component = styled.div`
-//     background: #F5F5F5;
-// `
-
+const Component = styled.div`
+    background: #F5F5F5;
+`
+// additional specs
 const toolbarOptions = [
     ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
     ['blockquote', 'code-block'],
@@ -29,9 +30,9 @@ const toolbarOptions = [
 ];
 
 const TextEditor = () => {
-    // useEffect(() => {
-    //     const quillServer = new Quill('#container', { theme: 'snow', modules: { toolbar: toolbarOptions }});
-    // }, []);
+
+    const [quill, setQuill] = useState();
+    const [socket, setSocket] = useState();
 
     const wrapperx = useCallback((wrapper)=>{
         if(wrapper===null){
@@ -40,18 +41,34 @@ const TextEditor = () => {
         wrapper.innerHTML="";
         const editor = document.createElement("div")
         wrapper.append(editor);
-        const quillserver = new Quill(editor, {theme:"snow", modules:{toolbar:toolbarOptions}})
-    },[])
+        const quillServer = new Quill(editor, {theme:"snow", modules:{toolbar:toolbarOptions}})
+        setQuill(quillServer);
+    },[]);
+
+    useEffect(()=>{
+        const socketServer = io("http://localhost:9000")
+        setSocket(socketServer);
+
+        return () => {
+            socketServer.disconnect();
+        }
+    })
+
+    // useEffect(()=>{
+
+    // })
+
     return (
-        <Box className='container' id='container' ref={wrapperx}></Box>
-        // <Component>
-        //     <Box className='container' id='container' ref={wrapperx}></Box>
-        // </Component>
+        // <Box className='container' id='container' ref={wrapperx}></Box>
+        <Component>
+            <Box className='container' id='container' ref={wrapperx}></Box>
+        </Component>
     )
-}
+// }
 
 // useEffect(() => {
 //     const quillServer = new Quill('#container', { theme: 'snow', modules: { toolbar: toolbarOptions }});
+//     //ffssdsd
 // }, []);
 
 // return (
@@ -59,6 +76,8 @@ const TextEditor = () => {
 //         <Box className='container' id='container'></Box>
 //     </Component>
 // )
+
+}
 
 // // additional toolbar specs from Quill
 // const toolbarOptions = [
