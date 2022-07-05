@@ -52,11 +52,39 @@ const TextEditor = () => {
         return () => {
             socketServer.disconnect();
         }
-    })
+    },[])
 
-    // useEffect(()=>{
+    useEffect(()=>{
+            if(socket===null || quill === null){
+                return;
+            }
+            const handleChange = (delta, oldDelta, source) =>{
+                if(source==='user'){
+                    socket && socket.emit('send-changes', delta);
+                }
+            }
 
-    // })
+            quill && quill.on('text-change', handleChange);
+
+            return()=>{
+                quill && quill.off('text-change', handleChange);
+            }
+    },[quill,socket])
+
+    useEffect(()=>{
+        if(socket===null || quill === null){
+            return;
+        }
+        const handleChange = (delta) =>{
+            quill.updateContents(delta);
+        }
+
+        socket && socket.on('receive-changes', handleChange);
+
+        return()=>{
+            socket && socket.off('receive-changes', handleChange);
+        }
+},[quill,socket])
 
     return (
         // <Box className='container' id='container' ref={wrapperx}></Box>
