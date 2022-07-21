@@ -10,7 +10,8 @@ function App() {
 
     <Router>
       <Routes>
-          <Route path='/' element={<Navigate replace to={`/docs/${uuid()}`} /> } />
+          {/* if path is empty generate new uid and navigate to it. */}
+          <Route path='/' element={<Navigate replace to={`/docs/${uuid()}`} /> } /> 
           <Route path='/docs/:id' element={<TextEditor/>}  />
       </Routes>
     </Router>

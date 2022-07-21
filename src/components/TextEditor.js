@@ -2,6 +2,7 @@ import React, {useEffect, useCallback, useState} from 'react'
 import Box from '@mui/material/Box';
 import styled from '@emotion/styled'
 import Quill from 'quill';
+import { useParams } from 'react-router-dom';
 import {io} from "socket.io-client"
 import 'quill/dist/quill.snow.css'
 
@@ -33,6 +34,8 @@ const TextEditor = () => {
 
     const [quill, setQuill] = useState();
     const [socket, setSocket] = useState();
+    const {id} = useParams();
+    // console.log(id);
 
     const wrapperx = useCallback((wrapper)=>{
         if(wrapper===null){
@@ -43,6 +46,8 @@ const TextEditor = () => {
         wrapper.append(editor);
         const quillServer = new Quill(editor, {theme:"snow", modules:{toolbar:toolbarOptions}})
         setQuill(quillServer);
+        quillServer.disable();
+        quillServer.setText('Loading your documet...Please wait.');
     },[]);
 
     useEffect(()=>{
@@ -84,7 +89,32 @@ const TextEditor = () => {
         return()=>{
             socket && socket.off('receive-changes', handleChange);
         }
-},[quill,socket])
+    },[quill,socket])
+
+    useEffect(()=>{
+        if(quill === null || socket === null){
+            return;
+        }
+
+        socket && socket.once('load-document', document=>{
+            quill && quill.setContents(document);
+            quill && quill.enable();
+        })
+
+        socket && socket.emit('get-document', id);
+    }, [id, quill, socket])
+
+    useEffect(() => {
+        if (socket === null || quill === null) return;
+
+        const interval = setInterval(() => {
+            socket && socket.emit('save-document', quill.getContents())
+        }, 1000);
+
+        return () => {
+            clearInterval(interval);
+        }
+    }, [socket, quill]);
 
     return (
         // <Box className='container' id='container' ref={wrapperx}></Box>
